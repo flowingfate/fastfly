@@ -1,29 +1,45 @@
+const fs = require('fs');
+const path = require('path');
+
+const dist = path.resolve(__dirname, 'docs');
+if (fs.existsSync(dist)) {
+	fs.rmSync(dist, { recursive: true });
+}
+
+/**
+ * @param {string} tmpl
+ * @param {string} chunk
+ */
+function template(tmpl, chunk) {
+	return {
+		template: `./templates/${tmpl}.html`,
+		chunks: [chunk],
+		filename: `${chunk}.html`,
+		publicPath: './'
+	};
+}
+
+
 /**
  * @type {import('@rspack/cli').Configuration}
  */
 module.exports = {
 	context: __dirname,
 	entry: {
-		react: './src/react/index.tsx',
-		fast: './src/fast/index.ts',
+		'a-react-perf': './src/react/a-perf.tsx',
+		'a-fast-perf': './src/fast/a-perf.ts',
+		'b-react-perf': './src/react/b-perf.tsx',
+		'b-fast-perf': './src/fast/b-perf.ts',
 	},
 	output: {
 		path: 'docs',
 	},
 	builtins: {
 		html: [
-			{
-				template: './templates/react-perf.html',
-				chunks: ['react'],
-				filename: 'react-perf.html',
-				publicPath: './'
-			},
-			{
-				template: './templates/fast-perf.html',
-				chunks: ['fast'],
-				filename: 'fast-perf.html',
-				publicPath: './'
-			},
+			template('react', 'a-react-perf'),
+			template('fast', 'a-fast-perf'),
+			template('react', 'b-react-perf'),
+			template('fast', 'b-fast-perf'),
 			{
 				template: './templates/index.html',
 				chunks: [],
@@ -37,5 +53,6 @@ module.exports = {
 	devServer: {
 		hot: false,
 		liveReload: false,
+		open: true,
 	}
 };

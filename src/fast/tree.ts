@@ -53,11 +53,11 @@ export class Dot extends FASTElement {
 }
 
 
-const halfTemplate = html<Triangle>`
+const dotTemplate = html<Triangle>`
         <f-dot :x=${(x) => x.x - HALF_TARGET_SIZE} :y=${(x) => x.y - HALF_TARGET_SIZE} :size=${() => TARGET_SIZE} :text=${(x) => x.text}></f-dot>
 `;
 
-const otherTemplate =  html<Triangle>`
+const trippleTriangleTemplate =  html<Triangle>`
   <f-triangle :x=${(x) => x.x} :y=${(x) => x.y - half(half(x.s))} :s=${(x) => half(x.s)} :text=${(x) => x.text}></f-triangle>
   <f-triangle :x=${(x) => x.x - half(x.s)} :y=${(x) => x.y + half(half(x.s))} :s=${(x) => half(x.s)} :text=${(x) => x.text}></f-triangle>
   <f-triangle :x=${(x) => x.x + half(x.s)} :y=${(x) => x.y + half(half(x.s))} :s=${(x) => half(x.s)} :text=${(x) => x.text}></f-triangle>
@@ -69,7 +69,7 @@ const otherTemplate =  html<Triangle>`
  */
 @customElement({
   name: 'f-triangle',
-  template: halfTemplate,
+  template: dotTemplate,
 })
 export class Triangle extends FASTElement {
   public x = 0;
@@ -82,7 +82,7 @@ export class Triangle extends FASTElement {
     observe(this, 'x', 'y', 's', 'text');
     Observable.getNotifier(this).subscribe({
       handleChange: () => {
-        this.$fastController.template = this.s <= 25 ? halfTemplate : otherTemplate
+        this.$fastController.template = this.s <= 25 ? dotTemplate : trippleTriangleTemplate
       }
     }, "s");
   }

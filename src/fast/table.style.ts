@@ -1,12 +1,6 @@
 import {  css } from '@microsoft/fast-element';
 
 export const rowStyle = css`
-  :host {
-    display: table-row;
-  }
-  .row {
-    width: 100%;
-  }
   .row:hover {
     background-color: aqua;
   }

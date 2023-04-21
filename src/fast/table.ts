@@ -1,4 +1,4 @@
-import { FASTElement, customElement, html, repeat } from '@microsoft/fast-element';
+import { FASTElement, customElement, html, repeat, Controller } from '@microsoft/fast-element';
 import { observe } from './observe';
 import { rowStyle, actionStyle, tableStyle } from './table.style';
 
@@ -34,8 +34,9 @@ function buildData(count: number) {
 @customElement({
   name: 'f-row',
   styles: rowStyle,
+  elementOptions: { extends: 'tr' },
+  shadowOptions: null,
   template: html`
-    <tr class="row ${x => x.selected ? 'selected' : ''}">
       <td class="col col-1">${x => x.item.id}</td>
       <td class="col col-2">${x => x.item.label}</td>
       <td class="col col-3">
@@ -44,18 +45,39 @@ function buildData(count: number) {
       <td class="col col-4">
         <a @click=${x => x.select(x.item)}>Select</a>
       </td>
-    </tr>
   `,
 })
-export class Row extends FASTElement {
+export class Row extends HTMLTableRowElement {
+  public readonly $fastController: Controller;
+
   public item!: RowItem;
-  public selected = false;
   public select = (item: RowItem) => {};
   public delete = (item: RowItem) => {};
 
   constructor() {
     super();
-    observe(this, 'item', 'selected', 'select', 'delete');
+    this.$fastController = Controller.forCustomElement(this);
+    observe(this, 'item', 'select', 'delete');
+  }
+
+  public $emit(
+    type: string,
+    detail?: any,
+    options?: Omit<CustomEventInit, "detail">
+  ) {
+    return this.$fastController.emit(type, detail, options);
+  }
+
+  public connectedCallback(): void {
+    this.$fastController.onConnectedCallback();
+  }
+
+  public disconnectedCallback(): void {
+    this.$fastController.onDisconnectedCallback();
+  }
+
+  public attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    this.$fastController.onAttributeChangedCallback(name, oldValue, newValue);
   }
 }
 
@@ -128,6 +150,15 @@ export class Actions extends FASTElement {
 
 
 
+const repeatRowTmpl = html`
+  <tr is="f-row"
+    class="row ${(r, c) => (r.id === c.parent.selected) ? 'selected' : ''}"
+    :item=${r => r}
+    :selected=${(r, c) => (r.id === c.parent.selected)}
+    :select=${(_, c) => c.parent.select}
+    :delete=${(_, c) => c.parent.delete}
+  ></tr>
+`;
 /**
  * ------------------------------------------------------------------------------------------
  * The Table Component
@@ -142,14 +173,7 @@ export class Actions extends FASTElement {
       <f-actions :setList=${x => x.setList} :setSelect=${x => x.setSelect}></f-actions>
       <table class="rc-table">
         <tbody>
-          ${repeat(x => x.list, html`
-            <f-row
-              :item=${r => r}
-              :selected=${(r, c) => (r.id === c.parent.selected)}
-              :select=${(_, c) => c.parent.select}
-              :delete=${(_, c) => c.parent.delete}
-            ></f-row>
-          `)}
+          ${repeat(x => x.list, repeatRowTmpl)}
         </tbody>
       </table>
     </div>

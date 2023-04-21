@@ -54,7 +54,7 @@ export class Dot extends FASTElement {
 
 
 const dotTemplate = html<Triangle>`
-        <f-dot :x=${(x) => x.x - HALF_TARGET_SIZE} :y=${(x) => x.y - HALF_TARGET_SIZE} :size=${() => TARGET_SIZE} :text=${(x) => x.text}></f-dot>
+  <f-dot :x=${(x) => x.x - HALF_TARGET_SIZE} :y=${(x) => x.y - HALF_TARGET_SIZE} :size=${() => TARGET_SIZE} :text=${(x) => x.text}></f-dot>
 `;
 
 const trippleTriangleTemplate =  html<Triangle>`

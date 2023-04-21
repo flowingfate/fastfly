@@ -1,7 +1,11 @@
-import { FASTElement, customElement, html } from '@microsoft/fast-element';
+import { FASTElement, Observable, customElement, html } from '@microsoft/fast-element';
 import { observe } from './observe';
 
+function half(num: number) {
+  return num / 2;
+}
 const TARGET_SIZE = 25;
+const HALF_TARGET_SIZE = half(TARGET_SIZE);
 
 /**
  * ------------------------------------------------------------------------------------------
@@ -49,6 +53,15 @@ export class Dot extends FASTElement {
 }
 
 
+const dotTemplate = html<Triangle>`
+        <f-dot :x=${(x) => x.x - HALF_TARGET_SIZE} :y=${(x) => x.y - HALF_TARGET_SIZE} :size=${() => TARGET_SIZE} :text=${(x) => x.text}></f-dot>
+`;
+
+const trippleTriangleTemplate =  html<Triangle>`
+  <f-triangle :x=${(x) => x.x} :y=${(x) => x.y - half(half(x.s))} :s=${(x) => half(x.s)} :text=${(x) => x.text}></f-triangle>
+  <f-triangle :x=${(x) => x.x - half(x.s)} :y=${(x) => x.y + half(half(x.s))} :s=${(x) => half(x.s)} :text=${(x) => x.text}></f-triangle>
+  <f-triangle :x=${(x) => x.x + half(x.s)} :y=${(x) => x.y + half(half(x.s))} :s=${(x) => half(x.s)} :text=${(x) => x.text}></f-triangle>
+ `;
 /**
  * ------------------------------------------------------------------------------------------
  * The Triangle Component
@@ -56,23 +69,7 @@ export class Dot extends FASTElement {
  */
 @customElement({
   name: 'f-triangle',
-  template: html`${(e: Triangle) => {
-    const { x, y, text } = e;
-    let s = e.s;
-    if (s <= TARGET_SIZE) {
-      const half = TARGET_SIZE / 2;
-      return html`
-        <f-dot :x=${() => x - half} :y=${() => y - half} :size=${() => TARGET_SIZE} :text=${() => text}></f-dot>
-      `;
-    }
-    s /= 2;
-    const half = s / 2;
-    return html`
-      <f-triangle :x=${() => x} :y=${() => y - half} :s=${() => s} :text=${() => text}></f-triangle>
-      <f-triangle :x=${() => x - s} :y=${() => y + half} :s=${() => s} :text=${() => text}></f-triangle>
-      <f-triangle :x=${() => x + s} :y=${() => y + half} :s=${() => s} :text=${() => text}></f-triangle>
-    `;
-  }}`,
+  template: dotTemplate,
 })
 export class Triangle extends FASTElement {
   public x = 0;
@@ -83,6 +80,11 @@ export class Triangle extends FASTElement {
   constructor() {
     super();
     observe(this, 'x', 'y', 's', 'text');
+    Observable.getNotifier(this).subscribe({
+      handleChange: () => {
+        this.$fastController.template = this.s <= 25 ? dotTemplate : trippleTriangleTemplate
+      }
+    }, "s");
   }
 }
 
